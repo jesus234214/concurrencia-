@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Concurrencia - Tema 4</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+html{scroll-behavior:smooth}
+a{color:#1456D9}a:hover{color:#0B3A9E}
+</style>
+</head>
+<body>
+<div style="width: 100%; background: #F5F6F8; color: #0F1B2D; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 17px; line-height: 1.6; box-sizing: border-box">
+
+<!-- NAV -->
+<div style="max-width: 1120px; margin: 0 auto; padding: 24px 24px 0 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 15px; letter-spacing: 0.02em">TEMA 4 / CONCURRENCIA</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px; font-size: 15px; font-weight: 500">
+<a href="#conceptos" style="text-decoration: none; color: #0F1B2D">Conceptos</a>
+<a href="#acid" style="text-decoration: none; color: #0F1B2D">ACID</a>
+<a href="#consistencia" style="text-decoration: none; color: #0F1B2D">Consistencia</a>
+<a href="#aislamiento" style="text-decoration: none; color: #0F1B2D">Aislamiento</a>
+<a href="#commit" style="text-decoration: none; color: #0F1B2D">Commit y rollback</a>
+<a href="#referencias" style="text-decoration: none; color: #0F1B2D">Referencias</a>
+</div>
+</div>
+
+<!-- HERO -->
+<div style="max-width: 1120px; margin: 0 auto; padding: 72px 24px 88px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; gap: 48px">
+<div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 14px; color: #1456D9; letter-spacing: 0.04em">TALLER DE BASE DE DATOS · EQUIPO 4</div>
+<h1 style="margin: 0; font-size: 60px; line-height: 1.05; font-weight: 700; letter-spacing: -0.02em">Concurrencia: control de transacciones, aislamiento y recuperabilidad</h1>
+<p style="margin: 0; font-size: 20px; color: #3B4658; max-width: 560px">Cuando varios usuarios tocan los mismos datos al mismo tiempo, la base de datos necesita reglas. Aquí está el tema completo, desde las anomalías hasta el commit y el rollback.</p>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 8px">
+<a href="#conceptos" style="display: inline-block; background: #1456D9; color: #FFFFFF; text-decoration: none; font-weight: 600; padding: 14px 28px; border-radius: 8px; min-height: 20px">Empezar el tema</a>
+<a href="#referencias" style="display: inline-block; background: transparent; color: #0F1B2D; text-decoration: none; font-weight: 600; padding: 12px 26px; border-radius: 8px; border: 2px solid #0F1B2D">Ver referencias</a>
+</div>
+</div>
+<div style="flex: 1 1 340px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 4px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #3B4658; letter-spacing: 0.04em; padding-bottom: 12px">CONTENIDO</div>
+<a href="#conceptos" style="display: flex; gap: 16px; align-items: baseline; text-decoration: none; color: #0F1B2D; padding: 12px 0; border-top: 1px solid #E4E8EF"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9; min-width: 36px">4.1</span><span style="font-weight: 500">Conceptos</span></a>
+<a href="#acid" style="display: flex; gap: 16px; align-items: baseline; text-decoration: none; color: #0F1B2D; padding: 12px 0; border-top: 1px solid #E4E8EF"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9; min-width: 36px">4.2</span><span style="font-weight: 500">Propiedades de las transacciones</span></a>
+<a href="#consistencia" style="display: flex; gap: 16px; align-items: baseline; text-decoration: none; color: #0F1B2D; padding: 12px 0; border-top: 1px solid #E4E8EF"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9; min-width: 36px">4.3</span><span style="font-weight: 500">Grados de consistencia</span></a>
+<a href="#aislamiento" style="display: flex; gap: 16px; align-items: baseline; text-decoration: none; color: #0F1B2D; padding: 12px 0; border-top: 1px solid #E4E8EF"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9; min-width: 36px">4.4</span><span style="font-weight: 500">Niveles de aislamiento</span></a>
+<a href="#commit" style="display: flex; gap: 16px; align-items: baseline; text-decoration: none; color: #0F1B2D; padding: 12px 0; border-top: 1px solid #E4E8EF"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9; min-width: 36px">4.5</span><span style="font-weight: 500">Commit y rollback</span></a>
+</div>
+</div>
+
+<!-- 4.1 CONCEPTOS -->
+<div id="conceptos" style="background: #FFFFFF; border-top: 1px solid #E4E8EF; border-bottom: 1px solid #E4E8EF">
+<div style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 56px; align-items: center">
+<div style="flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">4.1 CONCEPTOS</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Concurrencia y anomalías</h2>
+<p style="margin: 0; color: #3B4658">La concurrencia permite el acceso simultáneo a los datos, pero sin control pueden aparecer anomalías. Sin mecanismos de sincronización, la consistencia puede verse comprometida.</p>
+<p style="margin: 0; color: #3B4658">El ejemplo clásico es la actualización perdida: dos transacciones leen el mismo saldo a la vez y la última en escribir borra el trabajo de la otra.</p>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; background: #F5F6F8; border: 1px solid #D5DAE3; border-radius: 16px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #3B4658">EJEMPLO: SALDO INICIAL = 100</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<div style="flex: 1 1 140px; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 10px; padding: 16px"><div style="font-weight: 600">Transacción 1</div><div style="font-family: 'IBM Plex Mono', monospace; color: #3B4658">lee 100, suma 50</div></div>
+<div style="flex: 1 1 140px; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 10px; padding: 16px"><div style="font-weight: 600">Transacción 2</div><div style="font-family: 'IBM Plex Mono', monospace; color: #3B4658">lee 100, suma 30</div></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px">
+<div style="flex: 1 1 140px; background: #E3EDFF; border-radius: 10px; padding: 16px"><div style="font-size: 14px; font-weight: 600; color: #0B3A9E">Resultado correcto</div><div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 32px; color: #0F1B2D">180</div></div>
+<div style="flex: 1 1 140px; background: #0F1B2D; border-radius: 10px; padding: 16px"><div style="font-size: 14px; font-weight: 600; color: #C9D5E8">Resultado con la anomalía</div><div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 32px; color: #FFFFFF">130</div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 4.2 ACID -->
+<div id="acid" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">4.2 PROPIEDADES DE LAS TRANSACCIONES</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Propiedades ACID</h2>
+<p style="margin: 0; color: #3B4658">Las transacciones deben respetar un marco claro: atomicidad, consistencia, aislamiento y durabilidad.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 40px; color: #1456D9; line-height: 1">A</div>
+<h3 style="margin: 0; font-size: 21px">Atomicidad</h3>
+<p style="margin: 0; color: #3B4658">Todo o nada: si la transacción falla, se revierte por completo.</p>
+</div>
+<div style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 40px; color: #1456D9; line-height: 1">C</div>
+<h3 style="margin: 0; font-size: 21px">Consistencia</h3>
+<p style="margin: 0; color: #3B4658">Se mantienen los invariantes de la base de datos, como la suma de saldos.</p>
+</div>
+<div style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 40px; color: #1456D9; line-height: 1">I</div>
+<h3 style="margin: 0; font-size: 21px">Aislamiento</h3>
+<p style="margin: 0; color: #3B4658">Las transacciones se ejecutan como si fueran seriales, una tras otra.</p>
+</div>
+<div style="flex: 1 1 240px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 40px; color: #1456D9; line-height: 1">D</div>
+<h3 style="margin: 0; font-size: 21px">Durabilidad</h3>
+<p style="margin: 0; color: #3B4658">Los cambios confirmados persisten aunque haya fallos.</p>
+</div>
+</div>
+<div style="background: #E3EDFF; border-radius: 14px; padding: 24px 28px; color: #0F1B2D"><span style="font-weight: 700">Ejemplo:</span> una transferencia bancaria cumple ACID para evitar fondos inconsistentes tras caídas del sistema.</div>
+</div>
+
+<!-- 4.3 CONSISTENCIA -->
+<div id="consistencia" style="background: #FFFFFF; border-top: 1px solid #E4E8EF; border-bottom: 1px solid #E4E8EF">
+<div style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">4.3 GRADOS DE CONSISTENCIA</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Consistencia fuerte vs eventual</h2>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 24px">
+<div style="flex: 1 1 420px; min-width: 0; background: #F5F6F8; border: 1px solid #D5DAE3; border-radius: 14px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-size: 24px">Fuerte</h3>
+<p style="margin: 0; color: #3B4658">Garantiza que todas las vistas ven el mismo estado y el mismo orden de transacciones.</p>
+<p style="margin: 0; color: #3B4658"><b style="color: #0F1B2D">Úsala en:</b> contabilidad y saldos que no pueden estar desincronizados.</p>
+<p style="margin: 0; color: #3B4658"><b style="color: #0F1B2D">Costo:</b> puede implicar mayor latencia o sincronización entre nodos.</p>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; background: #F5F6F8; border: 1px solid #D5DAE3; border-radius: 14px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-size: 24px">Eventual</h3>
+<p style="margin: 0; color: #3B4658">Las réplicas pueden divergir temporalmente para mejorar la latencia y la disponibilidad.</p>
+<p style="margin: 0; color: #3B4658"><b style="color: #0F1B2D">Úsala en:</b> redes sociales y cachés, donde la rapidez de respuesta es prioritaria.</p>
+<p style="margin: 0; color: #3B4658"><b style="color: #0F1B2D">Costo:</b> la corrección se acerca con el tiempo, no de forma instantánea.</p>
+</div>
+</div>
+<p style="margin: 0; font-size: 20px; font-weight: 500">La decisión equilibra latencia y precisión inmediata.</p>
+</div>
+</div>
+
+<!-- 4.4 AISLAMIENTO -->
+<div id="aislamiento" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">4.4 NIVELES DE AISLAMIENTO</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Niveles y anomalías</h2>
+<p style="margin: 0; color: #3B4658">Cuantifica los fundamentos para diseñar pruebas de aislamiento.</p>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 380px; min-width: 0; background: #1456D9; color: #FFFFFF; border-radius: 14px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 64px; line-height: 1">4</div>
+<div style="font-weight: 600; font-size: 19px">niveles ANSI</div>
+<div>Read Uncommitted, Read Committed, Repeatable Read, Serializable.</div>
+</div>
+<div style="flex: 1 1 380px; min-width: 0; background: #0F1B2D; color: #FFFFFF; border-radius: 14px; padding: 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 64px; line-height: 1">4</div>
+<div style="font-weight: 600; font-size: 19px">anomalías clásicas</div>
+<div style="color: #C9D5E8">Dirty read, non-repeatable read, phantom, lost update.</div>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px">
+<h3 style="margin: 0; font-size: 24px">¿Qué anomalías previene cada nivel?</h3>
+<div style="overflow-x: auto; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px">
+<table style="width: 100%; min-width: 640px; border-collapse: collapse; font-size: 16px">
+<thead>
+<tr style="background: #F5F6F8; text-align: left">
+<th style="padding: 14px 20px; font-weight: 600">Nivel</th>
+<th style="padding: 14px 20px; font-weight: 600">Dirty read</th>
+<th style="padding: 14px 20px; font-weight: 600">Non-repeatable read</th>
+<th style="padding: 14px 20px; font-weight: 600">Phantom</th>
+<th style="padding: 14px 20px; font-weight: 600">Lost update</th>
+</tr>
+</thead>
+<tbody>
+<tr style="border-top: 1px solid #E4E8EF"><td style="padding: 14px 20px; font-weight: 600">Read Uncommitted</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px">Posible</td></tr>
+<tr style="border-top: 1px solid #E4E8EF"><td style="padding: 14px 20px; font-weight: 600">Read Committed</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px">Posible</td></tr>
+<tr style="border-top: 1px solid #E4E8EF"><td style="padding: 14px 20px; font-weight: 600">Repeatable Read</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px">Posible</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td></tr>
+<tr style="border-top: 1px solid #E4E8EF"><td style="padding: 14px 20px; font-weight: 600">Serializable</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td><td style="padding: 14px 20px; font-weight: 600; color: #0B3A9E">Previene</td></tr>
+</tbody>
+</table>
+</div>
+<div style="font-size: 14px; color: #3B4658">Matriz clásica del estándar ANSI; cada motor de base de datos puede variar en los detalles.</div>
+</div>
+
+<h3 style="margin: 16px 0 0 0; font-size: 24px">Equilibrio por nivel</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 24px">
+<div style="flex: 1 1 420px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+<h4 style="margin: 0; font-size: 20px">Read Uncommitted</h4>
+<p style="margin: 0; color: #3B4658">Ofrece la mayor concurrencia: puede leer datos no confirmados. Esto facilita el throughput en OLTP, pero introduce lecturas inconsistentes y posibles anomalías si hay actualizaciones concurrentes.</p>
+</div>
+<div style="flex: 1 1 420px; min-width: 0; background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 14px; padding: 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+<h4 style="margin: 0; font-size: 20px">Serializable</h4>
+<p style="margin: 0; color: #3B4658">Garantiza equivalencia serial y previene todas las anomalías, a costa de menor concurrencia. Ideal para transacciones críticas, pero puede reducir el rendimiento en cargas altas.</p>
+</div>
+</div>
+<p style="margin: 0; font-size: 20px; font-weight: 500">Cada nivel equilibra seguridad y rendimiento; elige según la carga y la criticidad de la aplicación.</p>
+
+<h3 style="margin: 16px 0 0 0; font-size: 24px">Mapa de anomalías: cómo elegir el nivel</h3>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 230px; min-width: 0; border-top: 3px solid #1456D9; padding-top: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">01</div>
+<h4 style="margin: 0; font-size: 19px">Enumerar anomalías</h4>
+<p style="margin: 0; color: #3B4658">Identifica qué fallos de lectura tu aplicación no puede tolerar.</p>
+</div>
+<div style="flex: 1 1 230px; min-width: 0; border-top: 3px solid #1456D9; padding-top: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">02</div>
+<h4 style="margin: 0; font-size: 19px">Prevención por nivel</h4>
+<p style="margin: 0; color: #3B4658">Revisa la tabla de niveles para ver qué lectura permite cada uno: Read Uncommitted, Read Committed, Repeatable Read y Serializable.</p>
+</div>
+<div style="flex: 1 1 230px; min-width: 0; border-top: 3px solid #1456D9; padding-top: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">03</div>
+<h4 style="margin: 0; font-size: 19px">Impacto</h4>
+<p style="margin: 0; color: #3B4658">Evalúa el rendimiento y la concurrencia que implica cada opción.</p>
+</div>
+<div style="flex: 1 1 230px; min-width: 0; border-top: 3px solid #1456D9; padding-top: 16px; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">04</div>
+<h4 style="margin: 0; font-size: 19px">Selección y pruebas</h4>
+<p style="margin: 0; color: #3B4658">Elige el nivel mínimo necesario y prueba escenarios concurrentes que reproduzcan cada anomalía.</p>
+</div>
+</div>
+</div>
+
+<!-- 4.5 COMMIT Y ROLLBACK -->
+<div id="commit" style="background: #0F1B2D; color: #FFFFFF">
+<div style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 40px">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 700px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #8DB4FF">4.5 COMMIT Y ROLLBACK</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Flujo transaccional</h2>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 16px">
+<div style="flex: 1 1 190px; min-width: 0; border: 1px solid #2F4263; border-radius: 12px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; color: #8DB4FF">BEGIN</div>
+<p style="margin: 0; color: #C9D5E8; font-size: 16px">Inicia el contexto de la transacción y establece el aislamiento.</p>
+</div>
+<div style="flex: 1 1 190px; min-width: 0; border: 1px solid #2F4263; border-radius: 12px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; color: #8DB4FF">Lect/Escrit</div>
+<p style="margin: 0; color: #C9D5E8; font-size: 16px">Ejecuta lecturas y escrituras sobre los datos.</p>
+</div>
+<div style="flex: 1 1 190px; min-width: 0; border: 1px solid #2F4263; border-radius: 12px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; color: #8DB4FF">Verificación</div>
+<p style="margin: 0; color: #C9D5E8; font-size: 16px">Valida restricciones, integridad y checks definidos.</p>
+</div>
+<div style="flex: 1 1 190px; min-width: 0; background: #1456D9; border-radius: 12px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; color: #FFFFFF">COMMIT</div>
+<p style="margin: 0; color: #FFFFFF; font-size: 16px">Persiste los cambios y libera los locks.</p>
+</div>
+<div style="flex: 1 1 190px; min-width: 0; background: #FFFFFF; border-radius: 12px; padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 18px; color: #0F1B2D">ROLLBACK</div>
+<p style="margin: 0; color: #3B4658; font-size: 16px">Revierte los cambios ante error o conflicto; con logs, usa WAL/undo para la recuperación.</p>
+</div>
+</div>
+</div>
+</div>
+
+<!-- CHECKLIST -->
+<div id="checklist" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 48px">
+<div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">CHECKLIST DE CONCURRENCIA</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Decisiones consistentes y controladas</h2>
+<p style="margin: 0; color: #3B4658">Una lista de verificación práctica permite aplicar decisiones de concurrencia de forma consistente, con un enfoque basado en ejemplos.</p>
+</div>
+<div style="flex: 1 1 480px; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+<div style="background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 12px; padding: 18px 22px; display: flex; gap: 16px; align-items: baseline"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">01</span><span>Identifica las operaciones críticas.</span></div>
+<div style="background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 12px; padding: 18px 22px; display: flex; gap: 16px; align-items: baseline"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">02</span><span>Selecciona el nivel de aislamiento mínimo necesario.</span></div>
+<div style="background: #FFFFFF; border: 1px solid #D5DAE3; border-radius: 12px; padding: 18px 22px; display: flex; gap: 16px; align-items: baseline"><span style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: #1456D9">03</span><span>Mide su impacto con pruebas de carga concurrente.</span></div>
+<div style="background: #E3EDFF; border-radius: 12px; padding: 18px 22px"><span style="font-weight: 700">Caso de uso: módulo de pagos.</span> Elige Repeatable Read o Serializable, configura timeouts cortos en los locks y valida.</div>
+</div>
+</div>
+
+<!-- CONCLUSIÓN -->
+<div style="background: #E3EDFF">
+<div style="max-width: 820px; margin: 0 auto; padding: 80px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; text-align: center; align-items: center">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #0B3A9E">CONCLUSIÓN</div>
+<h2 style="margin: 0; font-size: 36px; line-height: 1.2; letter-spacing: -0.01em">Sin control, la concurrencia provoca anomalías</h2>
+<p style="margin: 0; color: #1E2B3F">ACID y los niveles de aislamiento protegen tus transacciones. Entiende cómo se relacionan las anomalías con cada nivel, de Read Uncommitted a Serializable, para diseñar políticas efectivas. Aplica el flujo de commit/rollback y la lista de verificación para tomar decisiones de concurrencia constantes y defendibles.</p>
+</div>
+</div>
+
+<!-- REFERENCIAS -->
+<div id="referencias" style="max-width: 1120px; margin: 0 auto; padding: 88px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 14px; color: #1456D9">REFERENCIAS</div>
+<h2 style="margin: 0; font-size: 40px; line-height: 1.15; letter-spacing: -0.01em">Bibliografía</h2>
+</div>
+<div style="display: flex; flex-direction: column; gap: 0">
+<p style="margin: 0; padding: 20px 0 20px 32px; text-indent: -32px; border-top: 1px solid #D5DAE3; color: #1E2B3F">Elmasri, R., &amp; Navathe, S. B. (2015). <i>Fundamentals of Database Systems</i> (7th ed.). Pearson.</p>
+<p style="margin: 0; padding: 20px 0 20px 32px; text-indent: -32px; border-top: 1px solid #D5DAE3; color: #1E2B3F">Ramakrishnan, R., &amp; Gehrke, J. (2002). <i>Database Management Systems</i> (3rd ed.). McGraw-Hill.</p>
+<p style="margin: 0; padding: 20px 0 20px 32px; text-indent: -32px; border-top: 1px solid #D5DAE3; border-bottom: 1px solid #D5DAE3; color: #1E2B3F">Silberschatz, A., Korth, H. F., &amp; Sudarshan, S. (2019). <i>Database System Concepts</i> (7th ed.). McGraw-Hill.</p>
+</div>
+</div>
+</div>
+</body>
+</html>
